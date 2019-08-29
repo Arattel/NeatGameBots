@@ -13,7 +13,6 @@ chardet==3.0.4
 chrome-gnome-shell==0.0.0
 cloudpickle==1.2.1
 command-not-found==0.3
-cryptography==2.1.4
 cupshelpers==1.0
 cycler==0.10.0
 decorator==4.4.0
@@ -86,7 +85,6 @@ prompt-toolkit==2.0.9
 protobuf==3.9.1
 ptyprocess==0.6.0
 pycairo==1.16.2
-pycrypto==2.6.1
 pycups==1.9.73
 pygame==1.9.6
 pyglet==1.3.2
@@ -101,14 +99,10 @@ python-apt==1.6.4
 python-dateutil==2.8.0
 python-debian==0.1.32
 pytz==2018.3
-pyxdg==0.25
-PyYAML==3.12
 pyzmq==18.1.0
 qtconsole==4.5.2
 remarkable==1.87
 reportlab==3.4.0
-requests==2.18.4
-requests-unixsocket==0.1.5
 scikit-learn==0.21.3
 scipy==1.3.1
 screen-resolution-extra==0.0.0
@@ -122,7 +116,6 @@ snake-gym==1.7
 system-service==0.3
 systemd-python==234
 tensorboard==1.12.2
-tensorflow==1.12.0
 termcolor==1.1.0
 terminado==0.8.2
 testpath==0.4.2
@@ -134,7 +127,6 @@ ubuntu-drivers-common==0.0.0
 ufw==0.36
 unattended-upgrades==0.1
 UniCurses==1.2
-urllib3==1.22
 usb-creator==0.3.3
 wadllib==1.3.2
 wcwidth==0.1.7
