@@ -7,7 +7,6 @@ from copy import deepcopy
 from more_itertools import sort_together
 
 
-
 class GameNet(torch.nn.Module):
     def __init__(self):
         super(GameNet, self).__init__()
@@ -93,7 +92,7 @@ def create_mating_pool(fitness, population, to_choose):
     for i in range(to_choose):
         p = np.random.uniform(0, 1)
         for j in range(len(fitness)):
-            if fitness[j] >= p and fitness[j] < p:
+            if fitness[j] >= p > fitness[j]:
                 if j not in indexes:
                     mating_pool.append(population[j])
                     indexes.append(j)
