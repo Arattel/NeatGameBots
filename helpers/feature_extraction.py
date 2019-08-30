@@ -1,11 +1,24 @@
 import numpy as np
 import cv2 as cv
+from math import atan2, pi
 
 
 def find_apple_coordinates_pixel_array(pixel_arr, food_color):
     indices = np.where(np.all(pixel_arr == food_color, axis=-1))
     indexes = list(zip(indices[1], indices[0]))
     return np.array(indexes[0])
+
+
+def normalize_vector(vector):
+    return vector / np.linalg.norm(vector)
+
+
+def get_angle(snake, food):
+    a = snake.head
+    b = food
+    a = normalize_vector(a)
+    b = normalize_vector(b)
+    return atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]) / pi
 
 
 def distances_to_walls(snake_obj, grid_size):
@@ -23,4 +36,7 @@ def feature_vector(snake_object, pixelarr, grid_size, food_color):
     pixel_grid = to_pixels(pixelarr)
     apple_coord = find_apple_coordinates_pixel_array(pixel_grid, food_color)
     distances = distances_to_walls(snake_object, grid_size)
-    return np.concatenate((direction_vector, apple_coord, distances))
+    angle = get_angle(snake_object, apple_coord)
+    return np.concatenate((direction_vector, apple_coord, distances, angle))
+
+
