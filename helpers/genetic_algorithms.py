@@ -91,11 +91,10 @@ def create_mating_pool(fitness, population, to_choose):
     for i in range(to_choose):
         p = np.random.uniform(0, 1)
         for j in range(len(fitness)):
-            if fitness[j] >= p > fitness[j]:
+            if sum(fitness[:j + 1]) >= p:
                 if j not in indexes:
                     mating_pool.append(population[j])
                     indexes.append(j)
-
         while len(mating_pool) <= i:
             index_to_append = random.randint(0, len(fitness) - 1)
             if index_to_append not in indexes:

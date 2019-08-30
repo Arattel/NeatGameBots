@@ -10,7 +10,8 @@ def find_apple_coordinates_pixel_array(pixel_arr, food_color):
 
 
 def normalize_vector(vector):
-    return vector / np.linalg.norm(vector)
+    res = vector / np.linalg.norm(vector)
+    return res
 
 
 def get_angle(snake, food):
