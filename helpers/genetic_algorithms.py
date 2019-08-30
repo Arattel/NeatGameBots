@@ -52,8 +52,7 @@ def create_population(individuals=1000):
     return generation
 
 
-def calculate_fitness(individual):
-    global env
+def calculate_fitness(individual, env=None):
     observation = env.reset()  # Constructs an instance of the game
     # Controller
     game_controller = env.controller
