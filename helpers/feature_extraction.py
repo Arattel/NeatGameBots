@@ -18,7 +18,7 @@ def get_angle(snake, food):
     b = food
     a = normalize_vector(a)
     b = normalize_vector(b)
-    return atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]) / pi
+    return np.array([atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]) / pi])
 
 
 def distances_to_walls(snake_obj, grid_size):
