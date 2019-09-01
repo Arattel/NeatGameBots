@@ -128,7 +128,7 @@ def selection_rank(items, fitness, n):
     return np.random.choice(np.array(items), n, replace=False, p=probabilities)
 
 
-def selection_boltzmann(items, fitness, n_to_select, current_generation, max_generations, alpha=.01, basic_temp=21):
+def selection_boltzmann(items, fitness, n_to_select, current_generation, max_generations, alpha=.01, basic_temp = 21):
     f_max = max(fitness)
     current_generation += 1
     k = 1 + 100 * current_generation / max_generations

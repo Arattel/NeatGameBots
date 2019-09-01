@@ -10,7 +10,8 @@ def find_apple_coordinates_pixel_array(pixel_arr, food_color):
 
 
 def normalize_vector(vector):
-    return vector / np.linalg.norm(vector)
+    res = vector / np.linalg.norm(vector)
+    return res
 
 
 def get_angle(snake, food):
@@ -18,7 +19,7 @@ def get_angle(snake, food):
     b = food
     a = normalize_vector(a)
     b = normalize_vector(b)
-    return atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]) / pi
+    return np.array([atan2(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]) / pi])
 
 
 def distances_to_walls(snake_obj, grid_size):
@@ -36,7 +37,8 @@ def feature_vector(snake_object, pixelarr, grid_size, food_color):
     pixel_grid = to_pixels(pixelarr)
     apple_coord = find_apple_coordinates_pixel_array(pixel_grid, food_color)
     distances = distances_to_walls(snake_object, grid_size)
-    angle = np.array([get_angle(snake_object, apple_coord)])
+    angle = get_angle(snake_object, apple_coord)
+    print(angle)
     return np.concatenate((direction_vector, apple_coord, distances, angle))
 
 
