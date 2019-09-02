@@ -1,48 +1,11 @@
 import torch
 import random
-from helpers.feature_extraction import feature_vector
-import cv2 as cv
 import numpy as np
-from copy import deepcopy
+import matplotlib.pyplot as plt
+
 from more_itertools import sort_together
-
-
-class GameNet(torch.nn.Module):
-    def __init__(self):
-        super(GameNet, self).__init__()
-        self.fc1 = torch.nn.Linear(11, 14)
-        self.fc2 = torch.nn.Linear(14, 4)
-        self.act = torch.nn.Sigmoid()
-
-    def forward(self, x):
-        x = self.act(self.fc1(x))
-        x = self.act(self.fc2(x))
-        return x.detach()
-
-    def mutate(self, p=.15):
-        state_dict = self.state_dict()
-        keys = list(state_dict.keys())
-        for key in keys:
-            for index, weight in enumerate(state_dict[key]):
-                if random.uniform(0, 1) <= p:
-                    delta = random.uniform(-.5, .5)
-                    state_dict[key][index] += delta
-        return self.load_state_dict(state_dict)
-
-    def crossover(self, other, p=.3):
-        state_dict0 = deepcopy(self.state_dict())
-        state_dict1 = deepcopy(other.state_dict())
-        keys = list(state_dict1.keys())
-        for key in keys:
-            if random.uniform(0, 1) <= p:
-                x = np.random.randint(1, len(state_dict0[key]))
-                state_dict0[key][:x], state_dict1[key][:x] = state_dict1[key][:x].clone(), state_dict0[key][:x].clone()
-
-        child_net0 = GameNet()
-        child_net1 = GameNet()
-        child_net0.load_state_dict(state_dict0)
-        child_net1.load_state_dict(state_dict1)
-        return child_net0.cuda(), child_net1.cuda()
+from helpers.feature_extraction import feature_vector
+from helpers.GameNet import GameNet
 
 
 def create_population(individuals=1000):
@@ -52,34 +15,82 @@ def create_population(individuals=1000):
     return generation
 
 
-def calculate_fitness(individual, env=None):
+def calculate_fitness(individual, env=None, save=False, display=False):
     observation = env.reset()  # Constructs an instance of the game
-    # Controller
-    game_controller = env.controller
-    # Grid
-    grid_object = game_controller.grid
-    grid_pixels = grid_object.grid
-    # Snake(s)
+    game_controller = env.controller  # Controller
+    grid_object = game_controller.grid  # Grid
     snakes_array = game_controller.snakes
-    snake_object1 = snakes_array[0]
-    to_pixels = lambda x: cv.resize(x, env.grid_size)
-
+    snake_object = snakes_array[0]
+    
+    saves = []
     env.render()
-    fitness = 0
-    features = feature_vector(snake_object1, grid_object.grid, env.grid_size, grid_object.FOOD_COLOR)
+
+    fitness, steps, eaten_apples = 0, 0, 0
+    
+    features = feature_vector(snake_object, grid_object.grid, env.grid_size, grid_object.FOOD_COLOR)
     features = torch.cuda.FloatTensor(features)
     action = np.argmax(individual.forward(features).cpu()).item()
-
     observation, reward, done, info = env.step(action)
-    fitness += reward
+    
+    steps += 1
+    if reward == 1:
+        eaten_apples += 1
+        fitness += 4
+    elif not reward:
+        fitness -= 0.25
+    else:
+        fitness -= 100
+
+    if display:
+        plt.imshow(observation)
+    if save:
+        saves.append(observation)
+
     while not done:
-        env.render()
-        features = torch.cuda.FloatTensor(
-            feature_vector(snake_object1, observation, env.grid_size, grid_object.FOOD_COLOR))
+        g = feature_vector(snake_object, observation, env.grid_size, grid_object.FOOD_COLOR)
+        features = torch.cuda.FloatTensor(g)
         action = np.argmax(individual.forward(features).cpu()).item()
+        
         observation, reward, done, info = env.step(action)
-        fitness += reward
-    return fitness + 1
+        steps += 1
+
+        if reward == 1:
+            eaten_apples += 1
+            fitness += 4 * eaten_apples
+        elif not reward:
+            fitness -= 0.25
+        else:
+            fitness -= 10 if steps > 15 else 100
+
+        if display:
+            plt.pause(.5)
+            plt.imshow(observation)
+        if save:
+            saves.append(observation)
+
+    return fitness, saves
+
+
+def create_mating_pool(fitness, population, to_choose):
+    cumulative_fitness = sum(fitness)
+    fitness = list(map(lambda x: x / cumulative_fitness, fitness))
+    fitness, population = sort_together([fitness, population], reverse=True)
+    mating_pool = []
+    indexes = []
+    for i in range(to_choose):
+        p = np.random.uniform(0, 1)
+        for j in range(len(fitness)):
+            if sum(fitness[:j + 1]) >= p:
+                if j not in indexes:
+                    mating_pool.append(population[j])
+                    indexes.append(j)
+        while len(mating_pool) <= i:
+            index_to_append = random.randint(0, len(fitness) - 1)
+            if index_to_append not in indexes:
+                indexes.append(index_to_append)
+                mating_pool.append(population[index_to_append])
+
+    return mating_pool
 
 
 def selection_best_percentage(fitness, population, to_choose):
@@ -128,7 +139,7 @@ def selection_rank(items, fitness, n):
     return np.random.choice(np.array(items), n, replace=False, p=probabilities)
 
 
-def selection_boltzmann(items, fitness, n_to_select, current_generation, max_generations, alpha=.01, basic_temp = 21):
+def selection_boltzmann(items, fitness, n_to_select, current_generation, max_generations, alpha=.01, basic_temp=21):
     f_max = max(fitness)
     current_generation += 1
     k = 1 + 100 * current_generation / max_generations
