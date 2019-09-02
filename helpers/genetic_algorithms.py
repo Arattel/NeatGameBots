@@ -56,7 +56,7 @@ def calculate_fitness(individual, env=None, save=False, display=False):
 
         if reward == 1:
             eaten_apples += 1
-            fitness += 4 * eaten_apples
+            fitness += 4 * int(eaten_apples ** .5)
         elif not reward:
             fitness -= 0.25
         else:
