@@ -40,5 +40,5 @@ def feature_vector(snake_object, pixelarr, grid_size, food_color):
     apple_coord = find_apple_coordinates_pixel_array(pixel_grid, food_color)
     distances = distances_to_walls(snake_object, grid_size)
     angle = get_angle(snake_object, apple_coord)
-    apple_distance = np.array([((snake_object.head[0] - apple_coord[0]) ** 2 + (snake_object.head[1] - apple_coord[1]) ** 2)])
-    return np.concatenate((direction_vector, apple_distance, distances, angle))
+#     apple_distance = np.array([((snake_object.head[0] - apple_coord[0]) ** 2 + (snake_object.head[1] - apple_coord[1]) ** 2)])
+    return np.concatenate((direction_vector, apple_coord, distances, angle))

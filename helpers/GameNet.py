@@ -7,7 +7,7 @@ from copy import deepcopy
 class GameNet(torch.nn.Module):
     def __init__(self):
         super(GameNet, self).__init__()
-        self.fc1 = torch.nn.Linear(10, 14)
+        self.fc1 = torch.nn.Linear(11, 14)
         self.fc2 = torch.nn.Linear(14, 4)
         self.act = torch.nn.Sigmoid()
 
