@@ -4,13 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from more_itertools import sort_together
+
 from helpers.feature_extraction import feature_vector
 from helpers.GameNet import GameNet
 
 
 def create_population(individuals=1000):
     generation = []
-    for i in range(individuals):
+    for _ in range(individuals):
         generation.append(GameNet().cuda())
     return generation
 
@@ -19,12 +20,10 @@ def calculate_fitness(individual, env=None, save=False, display=False):
     observation = env.reset()  # Constructs an instance of the game
     game_controller = env.controller  # Controller
     grid_object = game_controller.grid  # Grid
-    snakes_array = game_controller.snakes
-    snake_object = snakes_array[0]
+    snakes_array = game_controller.snakes  # All snakes in the game
+    snake_object = snakes_array[0]  
     
     saves = []
-    env.render()
-
     fitness, steps, eaten_apples = 0, 0, 0
     
     features = feature_vector(snake_object, grid_object.grid, env.grid_size, grid_object.FOOD_COLOR)
@@ -42,13 +41,14 @@ def calculate_fitness(individual, env=None, save=False, display=False):
         fitness -= 100
 
     if display:
-        plt.imshow(observation)
+        # plt.imshow(observation)    
+        env.render()
     if save:
         saves.append(observation)
 
     while not done:
-        g = feature_vector(snake_object, observation, env.grid_size, grid_object.FOOD_COLOR)
-        features = torch.cuda.FloatTensor(g)
+        features = feature_vector(snake_object, grid_object.grid, env.grid_size, grid_object.FOOD_COLOR)
+        features = torch.cuda.FloatTensor(features)
         action = np.argmax(individual.forward(features).cpu()).item()
         
         observation, reward, done, info = env.step(action)
@@ -56,7 +56,7 @@ def calculate_fitness(individual, env=None, save=False, display=False):
 
         if reward == 1:
             eaten_apples += 1
-            fitness += 4 * int(eaten_apples ** .5)
+            fitness += 4 * eaten_apples ** .5
         elif not reward:
             fitness -= 0.25
         else:
@@ -64,26 +64,32 @@ def calculate_fitness(individual, env=None, save=False, display=False):
 
         if display:
             plt.pause(.5)
-            plt.imshow(observation)
+            #  plt.imshow(observation)
+            env.render()
         if save:
             saves.append(observation)
-
-    return fitness, saves
+    
+    if save:
+        return fitness, saves
+    return fitness
 
 
 def create_mating_pool(fitness, population, to_choose):
     cumulative_fitness = sum(fitness)
     fitness = list(map(lambda x: x / cumulative_fitness, fitness))
     fitness, population = sort_together([fitness, population], reverse=True)
+    
     mating_pool = []
     indexes = []
     for i in range(to_choose):
         p = np.random.uniform(0, 1)
+        
         for j in range(len(fitness)):
             if sum(fitness[:j + 1]) >= p:
                 if j not in indexes:
                     mating_pool.append(population[j])
                     indexes.append(j)
+                    
         while len(mating_pool) <= i:
             index_to_append = random.randint(0, len(fitness) - 1)
             if index_to_append not in indexes:
@@ -119,8 +125,7 @@ def selection_roulette(items, fitness, n):
     return list(selection_roulette_(items, fitness, n))
 
 
-def selection_tournament_(items, fitness, n, tsize=5):
-    zipped = zip(items, fitness)
+def selection_tournament(items, fitness, n, tsize=5):
     for i in range(n):
         candidates = random.sample(items, tsize)
         candidate = max(candidates, key=lambda x: x[1])

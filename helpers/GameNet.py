@@ -5,10 +5,10 @@ from copy import deepcopy
 
 
 class GameNet(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, inputs=11, outputs=4):
         super(GameNet, self).__init__()
-        self.fc1 = torch.nn.Linear(11, 14)
-        self.fc2 = torch.nn.Linear(14, 4)
+        self.fc1 = torch.nn.Linear(inputs, inputs + 3)
+        self.fc2 = torch.nn.Linear(inputs + 3, outputs)
         self.act = torch.nn.Sigmoid()
 
     def forward(self, x):
@@ -33,7 +33,7 @@ class GameNet(torch.nn.Module):
         for key in keys:
             if random.uniform(0, 1) <= p:
                 x = np.random.randint(1, len(state_dict0[key]))
-                state_dict0[key][:x], state_dict1[key][:x] = state_dict1[key][:x].clone(), state_dict0[key][:x].clone()
+                state_dict0[key][:x], state_dict1[key][:x] = state_dict1[key][:x], state_dict0[key][:x]
 
         child_net0 = GameNet()
         child_net1 = GameNet()
