@@ -8,6 +8,13 @@ Install all required libs by running
 pip install -r requirements.txt
 ```
 
+For FlappyBird, run
+```sh
+git clone https://github.com/jmathison/gym-simpleflappy.git
+cd gym-simpleflappy
+pip install -e .
+```
+
 Then, in the root folder (make sure jupyter is installed):
 ```sh
 jupyter notebook
